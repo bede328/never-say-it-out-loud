@@ -4,7 +4,7 @@
 // to /output/entry.txt: a single line of UTF-8 text, 1-200 characters,
 // no trailing newline.
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
 export function buildLine(): string {
@@ -32,6 +32,14 @@ function main(): void {
   const outPath = "/output/entry.txt";
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, line, "utf8");
+  // Read-back verification: the file must hold exactly the line, byte for byte.
+  const back = readFileSync(outPath, "utf8");
+  if (back !== line) {
+    throw new Error("read-back mismatch: /output/entry.txt does not match the line");
+  }
+  if (Buffer.byteLength(back, "utf8") !== Buffer.byteLength(line, "utf8")) {
+    throw new Error("read-back mismatch: byte length differs");
+  }
 }
 
 main();
